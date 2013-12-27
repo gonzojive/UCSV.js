@@ -1,40 +1,43 @@
 /*!
- * UCSV v1.0.2
+ * UCSV 1.1.0
  * Provided under MIT License.
  *
- * Copyright 2010, Peter Johnson
+ * Copyright 2010-2012, Peter Johnson
  * http://www.uselesscode.org/javascript/csv/
  */
 
 /* jsLint stuff */
-/*global */
-/*members apply, arrayToCsv, charAt, csvToArray, length, prototype, push, 
-    replace, substring, test, toString, trim
+/*global exports */
+/*members apply, arrayToCsv, charAt, csvToArray, length, prototype, push,
+ replace, substring, test, toString, trim
 */
 
-"use strict";
 /**
  * Namespace for CSV functions
  * @namespace
  */
 var CSV = (function () {
+	"use strict";
 
 	var rxIsInt = /^\d+$/,
-	rxIsFloat = /^\d*\.\d+$|^\d+\.\d*$/,
-	rxNeedsQuoting = /^\s|\s$|,|"/,
-	trim = (function () {
-		// Fx 3.1 has a native trim function, it's about 10x faster, use it if it exists
-		if (String.prototype.trim) {
-			return function (s) {
-				return s.trim();
-			};
-		} else {
-			return function (s) {
-				return s.replace(/^\s*/, '').replace(/\s*$/, '');
-			};
-		}
-	}());
- 
+		rxIsFloat = /^\d*\.\d+$|^\d+\.\d*$/,
+		// If a string has leading or trailing space,
+		// contains a comma double quote or a newline
+		// it needs to be quoted in CSV output
+		rxNeedsQuoting = /^\s|\s$|,|"|\n/,
+		trim = (function () {
+			// Fx 3.1 has a native trim function, it's about 10x faster, use it if it exists
+			if (String.prototype.trim) {
+				return function (s) {
+					return s.trim();
+				};
+			} else {
+				return function (s) {
+					return s.replace(/^\s*/, '').replace(/\s*$/, '');
+				};
+			}
+		}());
+
 	function isNumber(o) {
 		return Object.prototype.toString.apply(o) === '[object Number]';
 	}
@@ -78,10 +81,10 @@ var CSV = (function () {
 	*/
 	function arrayToCsv(a) {
 		var cur,
-		out = '',
-		row,
-		i,
-		j;
+			out = '',
+			row,
+			i,
+			j;
 
 		for (i = 0; i < a.length; i += 1) {
 			row = a[i];
@@ -147,13 +150,13 @@ var CSV = (function () {
 		s = chomp(s);
 
 		var cur = '', // The character we are currently processing.
-		inQuote = false,
-		fieldQuoted = false,
-		field = '', // Buffer for building up the current field
-		row = [],
-		out = [],
-		i,
-		processField;
+			inQuote = false,
+			fieldQuoted = false,
+			field = '', // Buffer for building up the current field
+			row = [],
+			out = [],
+			i,
+			processField;
 
 		processField = function (field) {
 			if (fieldQuoted !== true) {
@@ -221,6 +224,14 @@ var CSV = (function () {
 		out.push(row);
 
 		return out;
+	}
+
+	// Add support for use as a CommonJS module.
+	// This allows use as a library with the Mozilla Add-On SDK
+	// or a module in Node.js via a call to require().
+	if (typeof exports === "object") {
+		exports.arrayToCsv = arrayToCsv;
+		exports.csvToArray = csvToArray;
 	}
 
 	return {
